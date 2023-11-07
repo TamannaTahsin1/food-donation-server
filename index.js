@@ -51,9 +51,26 @@ async function run() {
     });
 
     // *******FOR USERS DONATIONS********
+    // read data
+    app.get("/donations", async (req, res) => {
+      console.log(req.query.email)
+      // to read some data according to email
+      let query = {};
+      if(req.query?.email){
+        query ={email:req.query.email}
+      }
+      const result = await donationCollection.find(query).toArray()
+      res.send(result)
+    })
     // create data
-    
-    // *****FOR ADDED NEW DATA********
+    app.post("/donations", async (req, res) => {
+      const donation = req.body;
+      console.log(donation);
+      const result = await donationCollection.insertOne(donation)
+      res.send(result)
+    })
+    // delete data
+    // ***** ADDED NEW FOOD********
     // create data
     app.post("/foods", async (req, res) => {
       const newFoods = req.body;
@@ -63,11 +80,48 @@ async function run() {
     });
     // read data
     app.get("/foods", async (req, res) => {
-      const cursor = newFoodCollection.find();
-      const result = await cursor.toArray();
+      const cursor = newFoodCollection.find()
+      const result = await cursor.toArray()   
       res.send(result);
     });
-
+    app.get("/foods", async (req, res) => {
+      console.log(req.query.email)
+      // to read some data according to email
+      let query = {};
+      if(req.query?.email){
+        query ={email:req.query.email}
+      }
+      const result = await newFoodCollection.find(query).toArray()
+      res.send(result)
+    })
+    // delete data
+    app.delete('/foods/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await newFoodCollection.deleteOne(query)
+      res.send(result)
+    })
+    // update data
+    app.get('/foods/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await newFoodCollection.findOne(query)
+      res.send(result)
+    })
+    app.put('/foods/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const updatedFood = req.body;
+      const updatedNewFood ={
+        $set:{
+          food_name:updatedFood.food_name, quantity:updatedFood.quantity, food_image:updatedFood.food_image, date:updatedFood.date, location:updatedFood.location, 
+          notes:updatedFood.notes
+        }
+      }
+      const result = await newFoodCollection.updateOne(filter, updatedNewFood, options)
+      res.send(result)
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
