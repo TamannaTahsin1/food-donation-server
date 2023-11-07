@@ -70,6 +70,26 @@ async function run() {
       res.send(result)
     })
     // delete data
+    app.delete('/donations/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await donationCollection.deleteOne(query)
+      res.send(result)
+    })
+    // update data
+    app.patch('/donations/:id', async (req, res) =>{
+      const id = req.params.id;
+      const filter =  {_id: new ObjectId(id)}
+      const updateDonation = req.body;
+      console.log(updateDonation);
+      const updateDoc ={
+        $set:{
+          status:updateDonation.status
+        }
+      };
+      const result = await donationCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
     // ***** ADDED NEW FOOD********
     // create data
     app.post("/foods", async (req, res) => {
