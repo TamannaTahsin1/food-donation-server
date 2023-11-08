@@ -11,7 +11,9 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['https://food-donation-client.web.app/',
+  'https://food-donation-client.firebaseapp.com/'
+],
   credentials: true
 }));
 app.use(express.json());
@@ -65,23 +67,25 @@ async function run() {
 
     // ******AUTH RELATED API*********
     // create data
-    app.post("/jwt", logger, async (req, res) => {
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
       console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "240h",
+        expiresIn: "1d",
       });
       res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: false,
-          // sameSite: "none",
-        })
-        .send({ success: true });
+            .cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            })
+            .send({
+                status: true,
+            })
     });
     // *****FOR FEATURES DATA********
     // read data
-    app.get("/features", logger, async (req, res) => {
+    app.get("/features", async (req, res) => {
       const cursor = featureCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -98,7 +102,7 @@ async function run() {
 
     // *******FOR USERS DONATIONS********
     // read data
-    app.get("/donations", logger, verifyToken, async (req, res) => {
+    app.get("/donations", verifyToken, async (req, res) => {
       console.log(req.query.email);
       // to read some data according to email
       if(req.query.email !== req.query.email ){
